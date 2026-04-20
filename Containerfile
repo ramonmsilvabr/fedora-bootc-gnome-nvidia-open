@@ -19,8 +19,21 @@ dnf5 install 'dnf5-command(config-manager)' -y
 dnf5 install 'dnf5-command(copr)' -y
 dnf5 copr enable sentry/xpadneo -y
 
+<<<<<<< HEAD
 dnf5 install -y \
 kernel-modules-extra humbnailer compsize usbutils distrobox \
+=======
+# Instala um gnome completo
+dnf5 install @gnome-desktop -y
+
+# Instala a Gnome-software sem PackageKit
+dnf5 remove gnome-software -y
+dnf5 install gnome-software --setopt=install_weak_deps=False -y
+
+# instala alguns pacotes para ter um funcionamento básico do sistema
+dnf5 -y install kernel-modules-extra @networkmanager-submodules @multimedia xdg-utils \
+evince-thumbnailer ffmpegthumbnailer compsize usbutils distrobox \
+>>>>>>> c25c3d3 (Correção pequena)
 toolbox nautilus micro ptyxis langpacks-core-pt_BR \
 flatpak wget tree git glycin-thumbnailer langpacks-fonts-pt podman \
 langpacks-pt_BR bash-color-prompt tuned tuned-ppd fastfetch zram spice-vdagent \
