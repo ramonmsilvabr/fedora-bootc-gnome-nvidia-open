@@ -47,15 +47,20 @@ podman-compose uld -y
 RUN <<EOF dnf5 install -y xorg-x11-drv-nvidia-cuda akmod-nvidia xpadneo
 echo "rhgb quiet" > /usr/lib/bootc/kargs.d/99-plymouth.conf
 echo "rd.driver.blacklist=nouveau,nova_core modprobe.blacklist=nouveau,nova_core" > /usr/lib/bootc/kargs.d/98-nvidia.conf
-kversion=$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}\n' | head -n 1) && \
+EOF
+# Constrói os módulos
+RUN kversion=$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}\n' | head -n 1) && \
     akmods --force --kernel "$kversion"
-# Limpa o DNF depois das transações    
+
+# Fase de limpeza
+RUN <<EOF    
 dnf5 clean all
 rm -rfv /var/cache/* \
         /var/lib/* \
         /var/log/* \
         /var/tmp/* 
 EOF
+
 # Habilita alguns serviços
 RUN <<ELF
 systemctl enable zram-swap.service
