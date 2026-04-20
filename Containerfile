@@ -1,33 +1,40 @@
-# Estágio de build do módulo da nvidia numa imagem separada
-# Para evitar poluir a imagem final com os pacotes de desenvolvimento do kernel e ferramentas de construção
-FROM quay.io/fedora/fedora-bootc:43 AS builder
+# Imagem principal
+FROM quay.io/fedora/fedora-bootc:43
 
-RUN <<ELL
-set -e
+RUN mkdir -p /var/roothome /data /var/home
 
-echo "Atualiza o kernel da imagem" 
-dnf5 upgrade -y 'kernel*' --refresh 
+RUN <<EOF
+# ajusta os links para opt e /usr/local ser gravável
+rm -rf /opt
+mkdir /var/opt
+ln -s /var/opt /opt
+mkdir /var/usrlocal
+mv /usr/local /usr/local_old
+ln -s /var/usrlocal /usr/local
+mv /usr/local_old/* /usr/local/
+rm -rf /usr/local_old
 
-echo "Instala o kernel-devel necessário para nvidia módulo"
-dnf5 -y install kernel-devel --refresh
-
-echo "Identifica a versão do kernel instalada no container, para instalar kernel-devel para Nvidia"
-KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
-
+# Habilita repos d
+dnf5 install 'dnf5-command(config-manager)' -y
 dnf5 install 'dnf5-command(copr)' -y
 dnf5 copr enable sentry/xpadneo -y
 
 dnf5 install -y \
     https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
     https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-uld.repo -y
+# Suporte a hardware
+dnf5 -y install kernel-modules-extra --refresh
+# Instala um gnome completo
+dnf5 install @gnome-desktop -y
 
-#
-dnf5 install -y akmod-nvidia xorg-x11-drv-nvidia-cuda \
-    kernel-devel kernel-headers xpadneo --refresh
- 
-# Cria os módulos/drivers
-akmods --force --kernels "$KERNEL_VERSION"
-ELL
+# Instala a Gnome-software sem PackageKit
+dnf5 remove gnome-software -y
+dnf5 install gnome-software --setopt=install_weak_deps=False -y
+
+# instala alguns pacotes para ter um funcionamento básico do sistema
+dnf5 -y install @networkmanager-submodules @multimedia xdg-utils \
+evince-thumbnailer ffmpegt
 
 # Imagem principal
 FROM quay.io/fedora/fedora-bootc:43
@@ -45,29 +52,13 @@ ln -s /var/usrlocal /usr/local
 mv /usr/local_old/* /usr/local/
 rm -rf /usr/local_old
 
-# Habilita repos do RPM Fusion
-dnf5 install -y \
-    https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-    https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-
-# Habilita repos d<pre>
-dnf5 install 'dnf5-command(copr)' -y
+# Habilita repos d
 dnf5 install 'dnf5-command(config-manager)' -y
+dnf5 install 'dnf5-command(copr)' -y
+dnf5 copr enable sentry/xpadneo -y
 
-
-dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-uld.repo -y
-# Suporte a hardware
-dnf5 -y install kernel-modules-extra linux-firmware --refresh
-# Instala um gnome completo
-dnf5 install @gnome-desktop -y
-
-# Instala a Gnome-software sem PackageKit
-dnf5 remove gnome-software -y
-dnf5 install gnome-software --setopt=install_weak_deps=False -y
-
-# instala alguns pacotes para ter um funcionamento básico do sistema
-dnf5 -y install @networkmanager-submodules @multimedia xdg-utils \
-evince-thumbnailer ffmpegthumbnailer compsize usbutils distrobox \
+dnf5 install -y \
+   humbnailer compsize usbutils distrobox \
 toolbox nautilus micro ptyxis langpacks-core-pt_BR \
 flatpak wget tree git glycin-thumbnailer langpacks-fonts-pt podman \
 langpacks-pt_BR bash-color-prompt tuned tuned-ppd fastfetch zram spice-vdagent \
@@ -81,19 +72,16 @@ RUN dnf5 install btrfs-assistant fastfetch libgda libgda-sqlite \
 podman-compose uld -y
 	
 # Driver da NVIDIA e controle de Xbox
-COPY 10-nvidia-args.toml
-RUN <<EOF dnf5 install -y xorg-x11-drv-nvidia-cuda --refresh
-#Instala o módulo da imagem do builder
-dnf5 -y install ./kmod-nvidia-*.rpm ./kmod-xpadneo-*.rpm
+COPY 10-nvidia-args.toml .
+RUN <<EOF dnf5 install -y xorg-x11-drv-nvidia-cuda akmod-nvidia xpadneo
 mv -v 10-nvidia-args.toml /usr/lib/bootc/kargs.d/10-nvidia-args.toml
-EOF
 # Limpa o DNF depois das transações    
-dnf clean all
+dnf5 clean all
 rm -rfv /var/cache/* \
         /var/lib/* \
         /var/log/* \
         /var/tmp/* 
-
+EOF
 # Habilita alguns serviços
 RUN <<ELF
 systemctl enable zram-swap.service
