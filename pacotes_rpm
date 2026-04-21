@@ -12,5 +12,6 @@ nvidia-driver-libs
 nvidia-gpu-firmware
 nvidia-modprobe
 nvidia-persistenced
-libva-nvidia-driver 
+libva-nvidia-driver
+nvidia-settings 
 uld
