@@ -55,7 +55,7 @@ RUN <<EOF
 set -e 
 
 dnf5 download nvidia-kmod-common nvidia-driver-cuda
-.
+
 dnf5 -y install libnvidia-cfg libnvidia-gpucomp libnvidia-ml nvidia-driver-cuda-libs \
 nvidia-driver-libs nvidia-gpu-firmware nvidia-modprobe nvidia-persistenced \
 libva-nvidia-driver
@@ -84,6 +84,7 @@ EOF
 # Fase de limpeza
 RUN <<EOF    
 rm -rvf pacotes_rpm 
+rm -rvg "kmod-*.rpm"
 dnf5 clean all
 rm -rfv /var/cache/* \
         /var/lib/* \
