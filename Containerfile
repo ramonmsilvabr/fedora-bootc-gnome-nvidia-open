@@ -9,6 +9,8 @@ COPY .anchor/secure_boot.der /etc/pki/akmods/certs/akmods.der
 RUN <<ELL 
 set -e
 # Atualiza Kernel apenas
+chmod 444 /etc/pki/akmods/certs/akmods.der
+openssl rsa -in /etc/pki/akmods/private/akmods.key -check -noout
 chmod 400 /etc/pki/akmods/private/akmods.key
 ln -s /etc/pki/akmods/certs/akmods.der /etc/pki/akmods/certs/public_key.der
 ln -s /etc/pki/akmods/private/akmods.key /etc/pki/akmods/private/private_key.priv 
