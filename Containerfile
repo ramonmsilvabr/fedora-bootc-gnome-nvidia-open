@@ -2,16 +2,16 @@ FROM quay.io/fedora/fedora-bootc:44 as builder
 
 RUN <<ELL 
 set -e
+# Atualiza Kernel apenas
 dnf5 upgrade -y 'kernel*' --refresh
-
+# Instala ferramentas de desenvolvimento apenas
 dnf5 -y install kernel-devel --refresh
-
+# Variável para ter a versão do kernel atual
 KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
-
+# Habilita repos no DNF e baixa os repositórios do xpadneo, uld e da NVIDIA
 dnf5 install 'dnf5-command(config-manager)' -y
 dnf5 install 'dnf5-command(copr)' -y
 dnf5 copr enable sentry/xpadneo -y
-dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-uld.repo -y
 dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-nvidia.repo
 
 dnf5 install -y nvidia-driver nvidia-open nvidia-driver-cuda xpadneo --refresh
@@ -22,7 +22,7 @@ ELL
 FROM quay.io/fedora/fedora-silverblue:44
 
 RUN mkdir -p /var/roothome /data /var/home
-# Copia lista de pacotes
+# Copia lista de pacotes e módulos compilados
 COPY pacotes_rpm ./
 COPY --from=builder /var/cache/akmods/nvidia/kmod-nvidia*.rpm ./
 COPY --from=builder /var/cache/akmods/xpadneo/kmod-xpadneo*.rpm ./
@@ -39,33 +39,34 @@ mv /usr/local_old/* /usr/local/
 rm -rf /usr/local_old
 
 
-# Habilita repos d
+# Habilita repos no DNF e baixa os repositórios do xpadneo, uld e da NVIDIA
 dnf5 install 'dnf5-command(config-manager)' -y
 dnf5 install 'dnf5-command(copr)' -y
 dnf5 copr enable sentry/xpadneo -y
 dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-uld.repo -y
 dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-nvidia.repo
 
-# Atualiza imagem
+# Atualiza imagem depois e todos os repos adicionados
 dnf5 upgrade -y
 EOF
 
 # Drivers via módulo ou firmware
 RUN <<EOF
 set -e 
-
+# Apenas baixa esses dois pacotes
 dnf5 download nvidia-kmod-common nvidia-driver-cuda
 
+# Instala bibliotecas da NVIDIA e drivers da Samsung
 dnf5 -y install libnvidia-cfg libnvidia-gpucomp libnvidia-ml nvidia-driver-cuda-libs \
 nvidia-driver-libs nvidia-gpu-firmware nvidia-modprobe nvidia-persistenced \
-libva-nvidia-driver
+libva-nvidia-driver uld
 
+# Instala ambos sem dependências
 rpm -vi --nodeps nvidia-kmod-common*.rpm
-
 rpm -vi --nodeps nvidia-driver-cuda*.rpm
 
+# Instala módulos compilados
 dnf5 -y install ./kmod-nvidia-*.rpm
-
 dnf5 -y install ./kmod-xpadneo-*.rpm
 
 EOF
@@ -84,7 +85,7 @@ EOF
 # Fase de limpeza
 RUN <<EOF    
 rm -rvf pacotes_rpm 
-rm -rvg "kmod-*.rpm"
+rm -rvf "kmod-*.rpm"
 dnf5 clean all
 rm -rfv /var/cache/* \
         /var/lib/* \
