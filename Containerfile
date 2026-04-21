@@ -1,6 +1,6 @@
 FROM quay.io/fedora/fedora-bootc:44 AS builder
 
-COPY .anchor/secure_boot.key /tmp/secure_boot.key
+COPY .anchor/secure_boot.key /etc/pki/akmods/private/private_key.priv
 COPY .anchor/secure_boot.der /etc/pki/akmods/certs/public_key.der
 RUN <<ELL 
 set -e
@@ -15,20 +15,11 @@ dnf5 install 'dnf5-command(config-manager)' -y
 dnf5 install 'dnf5-command(copr)' -y
 dnf5 copr enable sentry/xpadneo -y
 dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-nvidia.repo
-
+# Instala pacotes de desenvolvimento e drivers para compilar os módulos do kernel
 dnf5 install -y nvidia-driver nvidia-open nvidia-driver-cuda xpadneo --refresh
 akmods --force --kernels "$KERNEL_VERSION"
-find /lib/modules/$KERNEL_VERSION/extra -name "*.ko.xz" | while read module; do   
-    unxz "$module"
-    /usr/src/kernels/$KERNEL_VERSION/scripts/sign-file sha256 \
-    /tmp/secure_boot.key \
-    /etc/pki/akmods/certs/public_key.der \
-    "${module%.xz}" 
-    xz -f "${module%.xz}"
-    rm -rfv "${module%.ko}"
-done
-    
-rm /tmp/secure_boot.key
+# Remove a chave privada para não deixar rastros    
+rm /etc/pki/akmods/private/private_key.priv
 ELL
 
 # Imagem principal
