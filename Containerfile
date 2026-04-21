@@ -21,10 +21,7 @@ dnf5 install 'dnf5-command(config-manager)' -y
 dnf5 install 'dnf5-command(copr)' -y
 dnf5 copr enable sentry/xpadneo -y
 dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-uld.repo -y
-dnf5 install -y \
-    https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-    https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-
+dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-nvidia.repo
 # Instala a Gnome-software sem PackageKit
 dnf5 install gnome-software --setopt=install_weak_deps=False -y
 
@@ -34,10 +31,11 @@ EOF
 
 # Drivers via módulo ou firmware
 RUN dnf5 install -y kernel-devel kernel-headers \
-xorg-x11-drv-nvidia-cuda akmod-nvidia \
+nvidia-driver-open akmod-nvidia nvidia-driver-cuda \
 xpadneo \
 uld
 
+RUN dnf5 install nvidia-settings nvidia-driver-libs.i686
 # Constrói os módulos
 RUN kversion=$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}\n' | head -n 1) && \
     akmods --force --kernel "$kversion"
