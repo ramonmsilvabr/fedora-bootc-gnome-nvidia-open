@@ -2,13 +2,13 @@ FROM quay.io/fedora/fedora-bootc:44 AS builder
 
 RUN <<EOF
 mkdir -p /etc/pki/akmods/private/ /etc/pki/akmods/certs/
-rm -rfv /etc/pki/akmods/private/* /etc/pki/akmods/certs/*
 EOF
-COPY .anchor/secure_boot.key /etc/pki/akmods/private/private_key.priv
-COPY .anchor/secure_boot.der /etc/pki/akmods/certs/public_key.der
+COPY .anchor/secure_boot.key /etc/pki/akmods/private/akmods.key
+COPY .anchor/secure_boot.der /etc/pki/akmods/certs/akmods.der
 RUN <<ELL 
 set -e
 # Atualiza Kernel apenas
+chmod 400 /etc/pki/akmods/private/akmods.key
 dnf5 upgrade -y 'kernel*' --refresh
 # Instala ferramentas de desenvolvimento apenas
 dnf5 -y install kernel-devel openssl perl-devel mokutil keyutils --refresh
@@ -23,7 +23,7 @@ dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-
 dnf5 install -y nvidia-driver nvidia-open nvidia-driver-cuda xpadneo --refresh
 akmods --force --kernels "$KERNEL_VERSION"
 # Remove a chave privada para não deixar rastros    
-rm /etc/pki/akmods/private/private_key.priv
+rm /etc/pki/akmods/private/*
 ELL
 
 # Imagem principal
