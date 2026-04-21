@@ -1,11 +1,13 @@
 FROM quay.io/fedora/fedora-bootc:44 as builder
 
+COPY .anchor/secure_boot.key /tmp/secure_boot.key
+COPY .anchor/secure_boot.der /etc/pki/akmods/certs/public_key.der
 RUN <<ELL 
 set -e
 # Atualiza Kernel apenas
 dnf5 upgrade -y 'kernel*' --refresh
 # Instala ferramentas de desenvolvimento apenas
-dnf5 -y install kernel-devel --refresh
+dnf5 -y install kernel-devel openssl perl-devel kmod-sign --refresh
 # Variável para ter a versão do kernel atual
 KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 # Habilita repos no DNF e baixa os repositórios do xpadneo, uld e da NVIDIA
@@ -16,6 +18,9 @@ dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-
 
 dnf5 install -y nvidia-driver nvidia-open nvidia-driver-cuda xpadneo --refresh
 akmods --force --kernels "$KERNEL_VERSION"
+/usr/lib/udev/kmod-sign sha256 /tmp/secure_boot.key /etc/pki/akmods/certs/public_key.der \
+    $(find /lib/modules/ -name "*.ko")
+rm /tmp/secure_boot.key
 ELL
 
 # Imagem principal
