@@ -38,8 +38,8 @@ jobs:
           PRIVATEKEY_BASE64: ${{ secrets.SECURE_BOOT_KEY }}
         run: |
             mkdir -p .anchor
-            echo "$CERTIFICATE_BASE64" | base64 -di > .anchor/akmods.der
-            echo "$PRIVATEKEY_BASE64" | base64 -di > .anchor/akmods.priv
+            echo -n "$CERTIFICATE_BASE64" | base64 -di > .anchor/akmods.der
+            echo -n "$PRIVATEKEY_BASE64" | base64 -di > .anchor/akmods.priv
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
