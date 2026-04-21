@@ -56,6 +56,10 @@ set -e
 
 dnf5 download nvidia-kmod-common nvidia-driver-cuda
 
+dnf5 install libnvidia-cfg Libnvidia-gpucomp libnvidia-ml nvidia-driver-cuda-libs \
+nvidia-driver-libs nvidia-gpu-firmware nvidia-modprobe nvidia-persistenced \
+libva-nvidia-driver
+
 rpm -vi --nodeps nvidia-kmod-common*.rpm
 
 rpm -vi --nodeps nvidia-driver-cuda*.rpm
