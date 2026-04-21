@@ -1,5 +1,5 @@
 # Imagem principal
-FROM quay.io/fedora/fedora-bootc:43
+FROM quay.io/fedora/fedora-bootc:44
 
 RUN mkdir -p /var/roothome /data /var/home
 
@@ -29,42 +29,37 @@ dnf5 install @gnome-desktop -y --exclude=gnome-software
 dnf5 install gnome-software --setopt=install_weak_deps=False -y
 
 # instala alguns pacotes para ter um funcionamento básico do sistema
-dnf5 -y install alsa-firmware alsa-sof-firmware uld kernel-modules-extra @networkmanager-submodules @multimedia xdg-utils \
-evince-thumbnailer ffmpegthumbnailer compsize usbutils distrobox \
-toolbox nautilus micro ptyxis langpacks-core-pt_BR \
-flatpak wget tree git glycin-thumbnailer langpacks-fonts-pt podman \
-langpacks-pt_BR bash-color-prompt tuned tuned-ppd fastfetch zram spice-vdagent \
-plymouth plymouth-core-libs plymouth-graphics-libs plymouth-plugin-label \
-plymouth-plugin-two-step plymouth-scripts plymouth-system-theme \
-plymouth-theme-spinner 
-EOF
+tr '\n' ' ' < pacotes_rpm | xargs dnf5 install -y
 
-# Instala pacotes extras para funcionamento correto do sistema
-RUN dnf5 install btrfs-assistant fastfetch libgda libgda-sqlite \
-podman-compose uld -y
-	
-# Driver da NVIDIA e controle de Xbox
-RUN dnf5 install -y xorg-x11-drv-nvidia-cuda akmod-nvidia xpadneo
+# Drivers via módulo ou firmware
+RUN dnf5 install -y alsa-firmware alsa-sof-firmware \
+xorg-x11-drv-nvidia-cuda akmod-nvidia-open \
+xpadneo \
+uld 
 
 # Constrói os módulos
 RUN kversion=$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}\n' | head -n 1) && \
     akmods --force --kernel "$kversion"
 
-# Fase de limpeza
-RUN <<EOF    
-dnf5 clean all
-rm -rfv /var/cache/* \
-        /var/lib/* \
-        /var/log/* \
-        /var/tmp/* 
-EOF
+# Limpa o systemd users para chegar corretamente
+RUN systemd-sysusers && grpconv && pwconv
 
 # Parâmetros de boot
 COPY 10-nvidia-args.toml 11-rhgb-quiet-args.toml ./
 RUN <<EOF mv -v 10-nvidia-args.toml /usr/lib/bootc/kargs.d/10-nvidia-args.toml
 mv -v 11-rhgb-quiet-args.toml /usr/lib/bootc/kargs.d/11-rhgb-quiet-args.toml
 EOF
-
+# Configurar boot inicial para usar o plymouth
+RUN plymouth-set-default-theme bgrt
+# Fase de limpeza
+RUN <<EOF    
+rm -rvf pacotes_rpm 
+dnf5 clean all
+rm -rfv /var/cache/* \
+        /var/lib/* \
+        /var/log/* \
+        /var/tmp/* 
+EOF
 # Habilita alguns serviços
 RUN <<ELF
 systemctl enable zram-swap.service
