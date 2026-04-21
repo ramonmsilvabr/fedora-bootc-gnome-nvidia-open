@@ -1,5 +1,9 @@
 FROM quay.io/fedora/fedora-bootc:44 AS builder
 
+RUN <<EOF
+mkdir -p /etc/pki/akmods/private/ /etc/pki/akmods/certs/
+rm -rfv /etc/pki/akmods/private/* /etc/pki/akmods/certs/*
+EOF
 COPY .anchor/secure_boot.key /etc/pki/akmods/private/private_key.priv
 COPY .anchor/secure_boot.der /etc/pki/akmods/certs/public_key.der
 RUN <<ELL 
