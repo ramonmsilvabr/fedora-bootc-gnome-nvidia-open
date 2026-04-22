@@ -6,6 +6,7 @@ podman-compose
 nvtop
 gnome-tweaks
 gnome-firmware
+zenity
 libnvidia-cfg
 libnvidia-gpucomp
 libnvidia-ml 
