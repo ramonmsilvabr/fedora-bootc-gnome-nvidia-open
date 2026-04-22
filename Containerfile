@@ -24,6 +24,9 @@ EOF
 RUN <<EOF 
 set -e
 
+# Variável para ter a versão do kernel atual
+KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
+
 echo "Instalando drivers e ferramentas de compilação dos módulos"
 dnf5 install -y nvidia-driver nvidia-open nvidia-driver-cuda \
 xpadneo --refresh
