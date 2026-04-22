@@ -4,6 +4,8 @@ KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH
 PRIV_KEY="akmods.priv"
 DER_CERT="akmods.der"
 
+chmod 444 $DER_CERT
+chmod 400 $PRIV_KEY
 # 1. Localizar o utilitário sign-file no Silverblue/Fedora
 # O link 'build' em /lib/modules sempre aponta para os headers do kernel atual
 SIGN_FILE="/usr/lib/modules/$KERNEL_VERSION/build/scripts/sign-file"

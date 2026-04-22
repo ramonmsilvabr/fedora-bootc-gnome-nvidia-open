@@ -1,17 +1,8 @@
 FROM quay.io/fedora/fedora-bootc:44 AS builder
 
-RUN <<EOF
-
-EOF
-COPY .anchor/akmods.priv /etc/pki/akmods/private/akmods.priv
-COPY .anchor/akmods.der /etc/pki/akmods/certs/akmods.der
 RUN <<ELL 
 set -e
 # Atualiza Kernel apenas
-chmod 444 /etc/pki/akmods/certs/akmods.der
-chmod 400 /etc/pki/akmods/private/akmods.priv
-ln -s /etc/pki/akmods/certs/akmods.der /etc/pki/akmods/certs/public_key.der
-ln -s /etc/pki/akmods/private/akmods.priv /etc/pki/akmods/private/private_key.priv 
 dnf5 upgrade -y 'kernel*' --refresh
 # Instala ferramentas de desenvolvimento apenas
 dnf5 -y install kernel-devel openssl perl-devel mokutil keyutils --refresh
