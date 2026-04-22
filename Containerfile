@@ -78,9 +78,7 @@ EOF
 COPY .anchor/akmods.priv akmods.priv
 COPY .anchor/akmods.der akmods.der
 
-RUN <<EOF
-postinstall/sign-modules.sh
-EOF
+RUN bash postinstall/sign-modules.sh
 # Fase de limpeza
 RUN <<EOF    
 rm -rvf pacotes_rpm 
