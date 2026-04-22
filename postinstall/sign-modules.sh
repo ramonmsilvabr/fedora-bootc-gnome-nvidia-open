@@ -52,5 +52,6 @@ find "$TARGET_DIR" -type f \( -name "*.ko" -o -name "*.ko.xz" -o -name "*.ko.zst
     #6. Limpeza de arquivos temporários é feita automaticamente pelos comandos de descompactação e recompressão
     rm -rfv "$CURRENT_FILE" "$MODULE_PATH"
 done
-
+# Limpeza de chaves de criptografia por segurança
+rm -rfv "$PRIV_KEY" "$DER_CERT"
 echo "Processo concluído!"
