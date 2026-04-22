@@ -43,7 +43,8 @@ rm -rf /usr/local_old
 dnf5 copr enable sentry/xpadneo -y
 dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-uld.repo -y
 dnf5 config-manager addrepo --from-repofile=https://negativo17.org/repos/fedora-nvidia.repo
-
+# Remove o gnome-software-rpm-ostree para evitar conflitos de dependências, já que ele não é necessário em uma imagem minimalista
+dnf5 -y remove gnome-software-rpm-ostree
 # Atualiza imagem depois e todos os repos adicionados
 dnf5 -y upgrade --refresh
 EOF
