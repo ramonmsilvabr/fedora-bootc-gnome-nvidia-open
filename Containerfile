@@ -77,13 +77,15 @@ EOF
 #Habilitando secure boot
 COPY .anchor/akmods.priv akmods.priv
 COPY .anchor/akmods.der akmods.der
+COPY postinstall/ /tmp/postinstall/
 
-RUN bash postinstall/sign-modules.sh
+RUN bash /tmp/postinstall/sign-modules.sh
 # Fase de limpeza
 RUN <<EOF    
 rm -rvf pacotes_rpm 
 rm -rvf "kmod-*.rpm"
 rm -rvf .anchor
+rm -rvf /tmp/postinstall
 dnf5 clean all
 rm -rfv /var/cache/* \
         /var/lib/* \
