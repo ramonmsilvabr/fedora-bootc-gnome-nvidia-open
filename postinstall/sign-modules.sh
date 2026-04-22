@@ -49,7 +49,8 @@ find "$TARGET_DIR" -type f \( -name "*.ko" -o -name "*.ko.xz" -o -name "*.ko.zst
         echo "Recompactando em ZST..."
         sudo zstd --rm -19 -f "$CURRENT_FILE"
     fi
-
+    #6. Limpeza de arquivos temporários é feita automaticamente pelos comandos de descompactação e recompressão
+    rm -rfv "$CURRENT_FILE" "$MODULE_PATH"
 done
 
 echo "Processo concluído!"
