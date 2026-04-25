@@ -4,9 +4,13 @@ libgda-sqlite
 btrfs-assistant
 podman-compose
 nvtop
+btop
+fastfetch
 gnome-tweaks
 gnome-firmware
 zenity
+intel-media-driver
+nvidia-driver-selinux
 libnvidia-cfg
 libnvidia-gpucomp
 libnvidia-ml 
