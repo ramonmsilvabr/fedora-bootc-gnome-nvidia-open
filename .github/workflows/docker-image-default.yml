@@ -70,7 +70,7 @@ jobs:
             --skip-unused-stages=false \
             --security-opt label=disable \
             -t "localhost/bootc-raw:latest" \
-            -f ./builds/defaiult/Containerfile \
+            -f ./builds/default/Containerfile \
             -v "$(pwd):/run/src" \
             --build-arg FEDORA_VERSION=${{ env.SELECTED_VERSION }} \
             .
