@@ -5,6 +5,7 @@ As variantes se diferenciam na presença de drivers da NVIDIA fora da árvore na
 
 * `fedora-silverblue-bootc-custom-nvidia-open` que inclui a stack proprietária de NVIDIA para GPUs da série 16xx e acima (Turing+).
 * `fedora-silverblue-bootc-custom-nvidia-legacy-580xx` que inclui a stack proprietária da NVIDIA para GPUs da série 10xx, 9xx e 8xx (Maxwell, Pascal e Volta)
+* `fedora-silverblue-bootc-custom` apenas inclui drivers GPL/Open Source, nenhuma stack proprietária presente.
 
 Canais de atualização:
 |Canal|Versão atual|Recorrência de build|
@@ -14,7 +15,7 @@ Canais de atualização:
 |old|43|Ocasional|
 
 * Drivers fora da árvore inclusos:
-    * `nvidia`, `nvidia-drm`, `nvidia-uvm`, `nvidia-modeset`: Drivers da NVIDIA
+    * `nvidia`, `nvidia-drm`, `nvidia-uvm`, `nvidia-modeset`: Drivers da NVIDIA (ausente apenas no default)
     * `hid_xpadneo`: Driver para controle Xbox One via bluetooth.
 
 Ambiente Desktop/Compositor Wayland: GNOME Shell/Mutter
